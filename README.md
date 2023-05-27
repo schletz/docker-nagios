@@ -1,72 +1,66 @@
-# Docker-Nagios
+# Nagios Containerimage
 
-Docker image for Nagios
+Dies ist ein Fork des Dockerfiles von https://github.com/JasonRivers/Docker-Nagios mit einer fertigen Beispielkonfiguration mit Rechnern aus dem Schulnetzwerk.
 
-Build Status: [![Build Status](https://travis-ci.org/JasonRivers/Docker-Nagios.svg?branch=master)](https://travis-ci.org/JasonRivers/Docker-Nagios)
+Tipp: Du kannst das Containerimage auch auf einem Raspberry Pi erstellen, wenn du selbst dein Netzwerk zu Hause überwachen willst.
 
-Nagios Core 4.4.8 running on Ubuntu 20.04 LTS with NagiosGraph & NRPE
+![](nagios_screenshot_1236.png)
 
-| Product | Version |
-| ------- | ------- |
-| Nagios Core | 4.4.8 |
-| Nagios Plugins | 2.4.1 |
-| NRPE | 4.1.0 |
-| NCPA | 2.4.0 |
-| NSCA | 2.10.0 |
+## Erstellen des Dockerimages
 
-### Configurations
-Nagios Configuration lives in /opt/nagios/etc
-NagiosGraph configuration lives in /opt/nagiosgraph/etc
+Klone das Repo in einen Ordner auf deiner Festplatte:
 
-### Install
-
-```sh
-docker pull jasonrivers/nagios:latest
+```
+git clone https://github.com/schletz/docker-nagios
 ```
 
-### Running
+Gehe danach in das Verzeichnis *docker-nagios*.
+In diesem Verzeichnis muss sich die Datei *Dockerfile* befinden.
+Gib danach den folgenden Befehl ein, um das Image *nagios-6aaif* zu erzeugen.
+Hinweis: Für diesen Befehl muss Docker laufen, d. h. Docker Desktop muss davor gestartet werden.
 
-Run with the example configuration with the following:
-
-```sh
-docker run --name nagios4 -p 0.0.0.0:8080:80 jasonrivers/nagios:latest
+```
+cd docker-nagios
+docker build -t nagios-6aaif .
 ```
 
-alternatively you can use external Nagios configuration & log data with the following:
+Um einen Container zu erstellen, der das Image *nagios-6aaif* verwendet, führe den folgenden Befehl aus:
 
-```sh
-docker run --name nagios4  \
-  -v /path-to-nagios/etc/:/opt/nagios/etc/ \
-  -v /path-to-nagios/var:/opt/nagios/var/ \
-  -v /path-to-custom-plugins:/opt/Custom-Nagios-Plugins \
-  -v /path-to-nagiosgraph-var:/opt/nagiosgraph/var \
-  -v /path-to-nagiosgraph-etc:/opt/nagiosgraph/etc \
-  -p 0.0.0.0:8080:80 jasonrivers/nagios:latest
+**Windows Eingabeaufforderung**
+```
+docker run -d --name nagios-6aaif -v C:\Temp\nagios\etc:/opt/nagios/etc/ -p 0.0.0.0:8080:80 nagios-6aaif
 ```
 
-Note: The path for the custom plugins will be /opt/Custom-Nagios-Plugins, you will need to reference this directory in your configuration scripts.
+**macOS**
 
-There are a number of environment variables that you can use to adjust the behaviour of the container:
+Beim Starten des Containers werden die Konfigurationsdateien in das etc Verzeichnis geschrieben.
+Da auch ein Shellskript dabei ist, musst du mit *chmod* die Ausführungsrechte setzen.
+Warte nach *docker run*, bis der Container gestartet ist.
+Setze erst danach den *chmod* Befehl ab.
+Danach genügt es, den Container normal mit Docker Desktop oder dem *docker* Command zu starten.
+```
+docker run -d --name nagios-6aaif -v $HOME/nagios/etc:/opt/nagios/etc/ -p 0.0.0.0:8080:80 nagios-6aaif
+# Wait here until the container has been started.
+chmod -R 777 $HOME/nagios/etc
+```
 
-| Environamne Variable | Description |
-|--------|--------|
-| MAIL_RELAY_HOST | Set Postfix relayhost |
-| MAIL_INET_PROTOCOLS | set the inet_protocols in postfix |
-| NAGIOS_FQDN | set the server Fully Qualified Domain Name in postfix |
-| NAGIOS_TIMEZONE | set the timezone of the server |
+## Login
 
-For best results your Nagios image should have access to both IPv4 & IPv6 networks 
+Rufe nun im Browser die Adresse http://localhost:8080 auf.
+Du kannst dich mit folgenden Daten anmelden:
 
-#### Credentials
+**Username:** nagiosadmin  
+**Passwort:** nagios
 
-The default credentials for the web interface is `nagiosadmin` / `nagios`
+## Konfigurationsdateien
 
-### Extra Plugins
+Die Konfigurationsdateien sind nach dem Start des Containers in *C:\\Temp\\nagios\\etc* (Windows) bzw. im Homeverzeichnis unter *nagios/etc* (macOS) verfügbar.
+Es gibt einen Ordner *spengergasse*, indem das Schulnetzwerk abgebildet ist.
+Achte auf korrekte Zeilenumbrüche (LF, nicht CRLF).
+Wenn du die Konfiguration änderst, musst du mit folgendem Befehl die Konfiguration neu lesen.
+Er wird im **Hostsystem** (Windows oder macOS) ausgeführt.
 
-* Nagios nrpe [<http://exchange.nagios.org/directory/Addons/Monitoring-Agents/NRPE--2D-Nagios-Remote-Plugin-Executor/details>]
-* Nagiosgraph [<http://exchange.nagios.org/directory/Addons/Graphing-and-Trending/nagiosgraph/details>]
-* JR-Nagios-Plugins -  custom plugins I've created [<https://github.com/JasonRivers/nagios-plugins>]
-* WL-Nagios-Plugins -  custom plugins from William Leibzon [<https://github.com/willixix/WL-NagiosPlugins>]
-* JE-Nagios-Plugins -  custom plugins from Justin Ellison [<https://github.com/justintime/nagios-plugins>]
-* DF-Nagios-Plugins - custom pluging for MSSQL monitoring from Dan Fruehauf [<https://github.com/danfruehauf/nagios-plugins>]
-* check-mqtt - custom plugin for mqtt monitoring from Jan-Piet Mens [<https://github.com/jpmens/check-mqtt.git>]
+```
+docker exec nagios-6aaif nagios -v /opt/nagios/etc/nagios.cfg
+docker restart nagios-6aaif
+```
