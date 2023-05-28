@@ -1,8 +1,10 @@
 # Nagios Containerimage
 
 Dies ist ein Fork des Dockerfiles von https://github.com/JasonRivers/Docker-Nagios mit einer fertigen Beispielkonfiguration mit Rechnern aus dem Schulnetzwerk.
-
 Tipp: Du kannst das Containerimage auch auf einem Raspberry Pi erstellen, wenn du selbst dein Netzwerk zu Hause überwachen willst.
+
+> Die einzelnen Schritte, mit denen dieses Image erstellt wurde, sind in der Datei [Protokoll.md](Protokoll.md) verfügbar.
+> Sie sind bereits in diesem Repository eingearbeitet.
 
 ![](nagios_screenshot_1236.png)
 
