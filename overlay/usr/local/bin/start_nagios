@@ -8,6 +8,7 @@ if [ -z "$(ls -A /opt/nagios/etc)" ]; then
     echo "Started with empty ETC, copying example data in-place"
     cp -Rp /orig/etc/* /opt/nagios/etc/
 fi
+chmod -R 777 /opt/nagios/etc
 
 if [ -z "$(ls -A /opt/nagios/var)" ]; then
     echo "Started with empty VAR, copying example data in-place"

@@ -70,15 +70,8 @@ docker run -d --name nagios-6aaif -v C:\Temp\nagios\etc:/opt/nagios/etc/ -p 0.0.
 ```
 
 **macOS**
-
-Beim Starten des Containers werden die Konfigurationsdateien in das etc Verzeichnis geschrieben.
-Da auch ein Shellskript dabei ist, muss mit *chmod* die Ausführungsrechte gesetzt werden.
-Das wird durchgeführt, nachdem mit *docker run*, bis der Container gestartet wurde.
-
 ```
 docker run -d --name nagios-6aaif -v $HOME/nagios/etc:/opt/nagios/etc/ -p 0.0.0.0:8080:80 nagios-6aaif
-# Wait here until the container has been started.
-chmod -R 777 $HOME/nagios/etc
 ```
 
 ### Login
