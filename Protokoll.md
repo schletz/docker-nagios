@@ -8,7 +8,8 @@
 Auf https://github.com/JasonRivers/Docker-Nagios wird ein Dockerfile bereitgestellt, welches Nagios Core sowie die Nagios Plugins in ein Ubuntu 20.04 Image installiert.
 Zuerst wird mit `git clone https://github.com/JasonRivers/Docker-Nagios` das Repository geladen.
 Danach muss das Dockerfile angepasst werden, um einige Pakete, die die check commands benötigen, zu installieren.
-Außerdem werden nicht benötigte Plugins entfernt, damit das Image kleiner wird.
+Das check Kommando *check_ssl_validity* benötigt die Perl Pakete *libcrypt-x509-perl* und *libtext-glob-perl*.
+Zusätzlich werden nicht benötigte Plugins wie ncpa und das Nagios TV Theme entfernt, damit das Image kleiner wird.
 
 **Dockerfile**
 ```dockerfile
@@ -20,13 +21,20 @@ RUN apt-get update && apt-get install -y    \
     # ...
 ```
 
-Außerdem werden die Befehle zum Installieren der ncpa und des Nagios TV Themes entfernt.
 Die check Plugins für MSSQL Server Datenbanken werden auch entfernt, da sie Pakete der x86 Architektur verwenden.
 Das Docker Image soll auch auf M2 Plattformen erstellt werden, deswegen dürfen keine plattformabhängigen Pakete verwendet werden.
 
+Die Schritte, die im Dockerfile durchgeführt werden, sind folgende:
+
+1. Als Grundimage wird Ubuntu 20.04 verwendet.
+2. Mit *apt-get* werden die build tools, apache2, perl, python und php installiert.
+3. Der Sourcecode von Nagios Core wird von https://github.com/NagiosEnterprises/nagioscore geladen und mit *make install* kompiliert.
+4. Der Sourcecode der Core Plugins, die die check Kommandos bereitstellen, wird von https://github.com/nagios-plugins/nagios-plugins geladen und mit *make install* kompiliert.
+5. Der Sourcecode von Nagios Graph wird von https://git.code.sf.net/p/nagiosgraph/git geladen und das Installskript *install.pl* wird ausgeführt.
+
 ### Erstellen der Konfigurationsdateien
 
-Im Dockerfile wird mit folgenden, schon im Dockerfile enthaltenen, Befehl das Verzeichnis *overlay* in den Container kopiert.
+Im Dockerfile wird mit folgendem Befehl das Verzeichnis *overlay* in den Container kopiert.
 Dadurch können wir in */overlay/opt/nagios/etc* eine Konfiguration vorab erstellen, die schon mit dem ersten Starten des Containers zur Verfügung steht.
 
 **Dockerfile**
@@ -139,30 +147,29 @@ In der Dokumentation sind 4 Rückgabecodes definiert:
 In */opt/nagios/libexec* werden verschiedene Plugins bereits mit der Installation ausgeliefert.
 
 ```
-check-mqtt.py   check_icmp          check_nntps     check_ssl_validity
-check_apt       check_ide_smart     check_nt        check_ssmtp
-check_breeze    check_ifoperstatus  check_ntp       check_swap
-check_by_ssh    check_ifstatus      check_ntp_peer  check_tcp
-check_clamd     check_imap          check_ntp_time  check_time
-check_cluster   check_ircd          check_nwstat    check_udp
-check_dbi       check_jabber        check_oracle    check_ups
-check_dhcp      check_jenkins       check_overcr    check_uptime
-check_dig       check_ldap          check_pgsql     check_users
-check_disk      check_ldaps         check_ping      check_vpn
-check_disk_smb  check_load          check_pop       check_wave
-check_dns       check_log           check_procs     mibs
-check_dummy     check_mailq         check_real      negate
-check_file_age  check_mem.pl        check_rpc       remove_perfdata
-check_flexlm    check_mrtg          check_sensors   urlize
-check_fping     check_mrtgtraf      check_simap     utils.pm
-check_ftp       check_mysql         check_smtp      utils.sh
-check_game      check_mysql_query   check_snmp
-check_hpjd      check_nagios        check_spop
-check_http      check_nntp          check_ssh
+check_apt       check_file_age      check_jabber       check_nntps     check_real          check_time
+check_breeze    check_flexlm        check_ldap         check_nt        check_rpc           check_udp
+check_by_ssh    check_fping         check_ldaps        check_ntp       check_sensors       check_ups
+check_clamd     check_ftp           check_load         check_ntp_peer  check_simap         check_uptime
+check_cluster   check_hpjd          check_log          check_ntp_time  check_smtp          check_users
+check_dbi       check_http          check_mailq        check_nwstat    check_snmp          check_wave
+check_dhcp      check_icmp          check_mrtg         check_oracle    check_spop          mibs
+check_dig       check_ide_smart     check_mrtgtraf     check_overcr    check_ssh           negate
+check_disk      check_ifoperstatus  check_mysql        check_pgsql     check_ssl_validity  remove_perfdata
+check_disk_smb  check_ifstatus      check_mysql_query  check_ping      check_ssmtp         urlize
+check_dns       check_imap          check_nagios       check_pop       check_swap          utils.pm
+check_dummy     check_ircd          check_nntp         check_procs     check_tcp           utils.sh
 ```
 
 Meist sind sie in C geschrieben.
 Der Quellcode befindet sich im Repository https://github.com/nagios-plugins/nagios-plugins.
+Diese Skripts können auch direkt in der Bash ausgeführt werden.
+So liefert z. B. *check_ldap*, ob ein anonymes Bind mit einem Host über LDAPS, Protokollversion 2, erfolgreich war:
+
+```
+/opt/nagios/libexec/check_ldap -H ldap.spengergasse.at -b DC=htl-wien5,DC=schule -S -2
+LDAP OK - 0.199 seconds response time|time=0.198680s;;;0.000000
+```
 
 #### LDAP Check
 
