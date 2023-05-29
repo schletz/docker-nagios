@@ -1,7 +1,50 @@
 # Installation eines Nagios Überwachungsservers
 
-> **Name:** Max Mustermann  
-> **Klasse:** 6AAIF
+> **Name:** Max Mustermann (ACC123456)  
+> **Datum:** xx. Mai 2023  
+> **Klasse:** 6AAIF 2022/23
+
+- [Installation eines Nagios Überwachungsservers](#installation-eines-nagios-überwachungsservers)
+  - [Nagios Core vs. Nagios XI](#nagios-core-vs-nagios-xi)
+  - [Erstellen des Docker Containers](#erstellen-des-docker-containers)
+    - [Erstellen der Konfigurationsdateien](#erstellen-der-konfigurationsdateien)
+    - [Erstellen des Images und Starten des Containers](#erstellen-des-images-und-starten-des-containers)
+    - [Login](#login)
+  - [Beschreibung der Konfiguration](#beschreibung-der-konfiguration)
+    - [Anlegen der Hostgruppen: *01\_spengergasse\_hostgroup.cfg*](#anlegen-der-hostgruppen-01_spengergasse_hostgroupcfg)
+    - [Anlegen der check commands: *02\_spengergasse\_commands.cfg*](#anlegen-der-check-commands-02_spengergasse_commandscfg)
+      - [LDAP Check](#ldap-check)
+      - [HTTP Checks](#http-checks)
+      - [Gateway check](#gateway-check)
+    - [Host templates: *10\_spengergasse\_host\_templates.cfg*](#host-templates-10_spengergasse_host_templatescfg)
+    - [Hosts samt Services hinzufügen](#hosts-samt-services-hinzufügen)
+      - [Default Gateway: *20\_gateway.cfg*](#default-gateway-20_gatewaycfg)
+      - [LDAP Server: *21\_ldap\_spengergasse\_at.cfg*](#ldap-server-21_ldap_spengergasse_atcfg)
+      - [WWW Server: *22\_www\_spengergasse\_at.cfg*](#www-server-22_www_spengergasse_atcfg)
+      - [Cloud Server e-formular: *23\_e-formular\_spengergasse\_at.cfg*](#cloud-server-e-formular-23_e-formular_spengergasse_atcfg)
+  - [Nachträgliches Ändern der Konfigurationsdateien](#nachträgliches-ändern-der-konfigurationsdateien)
+  - [Screenshots](#screenshots)
+    - [Programmoberfläche](#programmoberfläche)
+    - [Graph des HTTP Checks von www.spengergasse.at](#graph-des-http-checks-von-wwwspengergasseat)
+
+## Nagios Core vs. Nagios XI
+
+Nagios Core ist open source und bildet den Kern des Überwachungsservers.
+Für eine einfachere Konfiguration gibt es Nagios XI, diese Version ist allerdings kostenpflichtig ($1995<sup>[1]</sup>).
+
+> Nagios XI includes a built-in web configuration GUI, which makes it much easier to manage than Core.
+> In Core, you configure everything with flat text on the command line; in XI, you can use the monitoring wizards and Core Config Manager advanced GUI.
+> 
+> Nagios XI also includes graphs and reports, customizable dashboards and views, an integrated DB, a backend API, multi-tenancy, and many other advanced features that will make it much quicker and easier to use, and provide a complete monitoring, alerting, graphing, and reporting solution.
+> <small>https://www.nagios.org/downloads/nagios-core, 29.05.2023</small>
+
+In diesem Beispiel wird die textbasierte Konfiguration mit Nagios Code verwendet, da die Konfiguration über Textdateien viele Vorteile bietet:
+
+- Die Konfiguration ist nachvollziehbar und reproduzierbar.
+- Die Konfiguration kann einfach gesichert werden.
+- Die Konfiguration kann unter Versionskontrolle (Repository) gestellt werden, um Änderungen ggf. rückgängig zu machen.
+ 
+<small>[1] https://www.nagios.com/products/nagios-xi/#pricing, 29.05.2023</small>
 
 ## Erstellen des Docker Containers
 
@@ -11,7 +54,7 @@ Danach muss das Dockerfile angepasst werden, um einige Pakete, die die check com
 Das check Kommando *check_ssl_validity* benötigt die Perl Pakete *libcrypt-x509-perl* und *libtext-glob-perl*.
 Zusätzlich werden nicht benötigte Plugins wie ncpa und das Nagios TV Theme entfernt, damit das Image kleiner wird.
 
-**Dockerfile**
+*Dockerfile*
 ```dockerfile
 RUN apt-get update && apt-get install -y    \
     # ...
@@ -37,14 +80,14 @@ Die Schritte, die im Dockerfile durchgeführt werden, sind folgende:
 Im Dockerfile wird mit folgendem Befehl das Verzeichnis *overlay* in den Container kopiert.
 Dadurch können wir in */overlay/opt/nagios/etc* eine Konfiguration vorab erstellen, die schon mit dem ersten Starten des Containers zur Verfügung steht.
 
-**Dockerfile**
+*Dockerfile*
 ```dockerfile
 ADD overlay /
 ```
 
 Zuerst ergänzen wir in der Datei *overlay/opt/nagios/etc/nagios.cfg* eine Zeile, die ein eigenes Verzeichnis für die Konfiguration des Spengergassen Netzwerkes inkludiert.
 
-***/overlay/opt/nagios/etc/nagios.cfg***
+*/overlay/opt/nagios/etc/nagios.cfg*
 ```
 cfg_dir=/opt/nagios/etc/spengergasse
 ```
@@ -135,7 +178,7 @@ In der Dokumentation sind 4 Rückgabecodes definiert:
 | 2                  | CRITICAL      | DOWN/UNREACHABLE       |
 | 3                  | UNKNOWN       | DOWN/UNREACHABLE       |
 
-<small>Quelle: https://assets.nagios.com/downloads/nagioscore/docs/nagioscore/4/en/pluginapi.html</small>
+<small>https://assets.nagios.com/downloads/nagioscore/docs/nagioscore/4/en/pluginapi.html, 28.05.2023</small>
 
 In */opt/nagios/libexec* werden verschiedene Plugins bereits mit der Installation ausgeliefert.
 
@@ -298,8 +341,6 @@ define host {
         max_check_attempts              5           ; Retry 5 times if status is not OK (max)
         register                        0           ; DONT REGISTER THIS DEFINITION - ITS NOT A REAL HOST, JUST A TEMPLATE!
 }
-
-
 ```
 
 ### Hosts samt Services hinzufügen
@@ -341,6 +382,7 @@ Zusätzlich wird das unter den commands registrierte Kommando *check_ldap* verwe
 Es wird als Parameter der BaseDN (*DC=htl-wien5,DC=schule*) übergeben.
 Im check command wird dies als *$ARG1$* an das command weitergegeben.
 Da der Server nur erreichbar ist, wenn der Host *default_gateway* verfügbar ist, wird dieser als *parent* eingetragen.
+Für den Ping wurde ein Schwellenwert für ein warning von 1000ms round trip time und 20% package loss bzw. 5000ms und 60% package loss für ein critical definiert.
 
 ```
 define host {
