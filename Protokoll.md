@@ -109,12 +109,14 @@ Damit die Konfiguration nachträglich noch verändert werden kann, mounten wir d
 
 **Windows Eingabeaufforderung**
 ```
-docker run -d --name nagios-6aaif -v C:\Temp\nagios\etc:/opt/nagios/etc/ -p 0.0.0.0:8080:80 nagios-6aaif
+docker run -d --name nagios-6aaif -v "%userprofile%\nagios\etc:/opt/nagios/etc/" -p 0.0.0.0:8080:80 nagios-6aaif
+echo You can edit your configuration in %userprofile%\nagios\etc
 ```
 
 **macOS**
 ```
-docker run -d --name nagios-6aaif -v $HOME/nagios/etc:/opt/nagios/etc/ -p 0.0.0.0:8080:80 nagios-6aaif
+docker run -d --name nagios-6aaif -v "$HOME/nagios/etc:/opt/nagios/etc/" -p 0.0.0.0:8080:80 nagios-6aaif
+echo You can edit your configuration in $HOME/nagios/etc
 ```
 
 ### Login
@@ -518,7 +520,7 @@ define service {
 
 ## Nachträgliches Ändern der Konfigurationsdateien
 
-Die Konfigurationsdateien sind nach dem Start des Containers in *C:\\Temp\\nagios\\etc* (Windows) bzw. im Homeverzeichnis unter *nagios/etc* (macOS) verfügbar.
+Die Konfigurationsdateien sind nach dem Start des Containers in *C:\\Users\\(username)\\nagios\\etc* (Windows) bzw. im Homeverzeichnis unter *nagios/etc* (macOS) verfügbar.
 Es gibt einen Ordner *spengergasse*, indem das Schulnetzwerk abgebildet ist.
 Bei Anpassungen oder Ergänzungen muss auf korrekte Zeilenumbrüche geachtet werden (LF, nicht CRLF).
 Wenn die Konfiguration geändert wurde, musst mit folgendem Befehl die Konfiguration neu gelesen werden.
@@ -528,7 +530,6 @@ Er wird im **Hostsystem** (Windows oder macOS) ausgeführt.
 docker exec nagios-6aaif nagios -v /opt/nagios/etc/nagios.cfg
 docker restart nagios-6aaif
 ```
-
 
 ## Screenshots
 

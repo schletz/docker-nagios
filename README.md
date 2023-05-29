@@ -30,12 +30,14 @@ Um einen Container zu erstellen, der das Image *nagios-6aaif* verwendet, führe 
 
 **Windows Eingabeaufforderung**
 ```
-docker run -d --name nagios-6aaif -v C:\Temp\nagios\etc:/opt/nagios/etc/ -p 0.0.0.0:8080:80 nagios-6aaif
+docker run -d --name nagios-6aaif -v "%userprofile%\nagios\etc:/opt/nagios/etc/" -p 0.0.0.0:8080:80 nagios-6aaif
+echo You can edit your configuration in %userprofile%\nagios\etc
 ```
 
 **macOS**
 ```
-docker run -d --name nagios-6aaif -v $HOME/nagios/etc:/opt/nagios/etc/ -p 0.0.0.0:8080:80 nagios-6aaif
+docker run -d --name nagios-6aaif -v "$HOME/nagios/etc:/opt/nagios/etc/" -p 0.0.0.0:8080:80 nagios-6aaif
+echo You can edit your configuration in $HOME/nagios/etc
 ```
 
 ## Login
@@ -48,7 +50,7 @@ Du kannst dich mit folgenden Daten anmelden:
 
 ## Konfigurationsdateien
 
-Die Konfigurationsdateien sind nach dem Start des Containers in *C:\\Temp\\nagios\\etc* (Windows) bzw. im Homeverzeichnis unter *nagios/etc* (macOS) verfügbar.
+Die Konfigurationsdateien sind nach dem Start des Containers in *C:\\Users\\(username)\\nagios\\etc* (Windows) bzw. im Homeverzeichnis unter *nagios/etc* (macOS) verfügbar.
 Es gibt einen Ordner *spengergasse*, indem das Schulnetzwerk abgebildet ist.
 Achte auf korrekte Zeilenumbrüche (LF, nicht CRLF).
 Wenn du die Konfiguration änderst, musst du mit folgendem Befehl die Konfiguration neu lesen.
