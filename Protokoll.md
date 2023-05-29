@@ -236,6 +236,7 @@ default         172.17.0.1      0.0.0.0         UG    0      0        0 eth0
 Nun kann mit *grep* nach dem Wort *default* gesucht werden.
 Der reguläre Ausdruck `default\s+([0-9\.]+).*` ersetzt die Zeile durch den Wert der ersten IP Adresse.
 Nun kann das normale *check_ping* Programm, das in */opt/nagios/libexec* vorhanden ist, verwendet werden.
+Die Warnschwelle ist 100ms durchschnittliche round trip time bei max. 20% package loss, ein Fehler wird ab 500ms oder 40% loss geliefert.
 
 **check_gateway.sh**
 ```bash
@@ -244,7 +245,7 @@ Nun kann das normale *check_ping* Programm, das in */opt/nagios/libexec* vorhand
 # Read the IP address from the output of the route command
 GW_IP=$(route | grep default | sed -E 's/default\s+([0-9\.]+).*/\1/')
 # Use existing ping command to check.
-/opt/nagios/libexec/check_ping -H $GW_IP -w 3000.0,80% -c 5000.0,100% -p 5
+/opt/nagios/libexec/check_ping -H $GW_IP -w 100.0,20% -c 500.0,40% -p 5
 ```
 
 ### Host templates: *10_spengergasse_host_templates.cfg*
@@ -366,7 +367,7 @@ define service {
     use                      local-service,graphed-service    ; Name of service template to use, see etc/objects/templates.cfg
     host_name                ldap.spengergasse.at
     service_description      PING
-    check_command            check_ping!100.0,20%!500.0,60%
+    check_command            check_ping!1000.0,20%!5000.0,60%
     check_interval           1
 }
 
@@ -409,7 +410,7 @@ define service {
     use                      local-service,graphed-service    ; Name of service template to use, see etc/objects/templates.cfg
     host_name                www.spengergasse.at
     service_description      PING
-    check_command            check_ping!100.0,20%!500.0,60%
+    check_command            check_ping!1000.0,20%!5000.0,60%
     check_interval           1
 }
 
